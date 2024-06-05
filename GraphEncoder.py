@@ -19,38 +19,24 @@ from torch_geometric.data import Batch
 
 
 def Random_Build_Graph(n_nodes, p):
-    """
-    使用networkx生成一个Erdős-Rényi随机图，然后转换为torch-geometric的格式。
 
-    参数:
-    - n_nodes: 图中节点的数量。
-    - p: 任意两个节点之间形成边的概率。
 
-    返回:
-    - data: torch-geometric的图数据对象。
-    """
-    # 使用networkx生成随机图
     G = nx.erdos_renyi_graph(n_nodes, p)
 
-    # 将networkx图转换为torch-geometric图数据对象
+
     data = from_networkx(G)
 
     return data.edge_index
 
 
-# 假设data是已经生成的torch-geometric图数据对象
-def Plot_Graph(data):
-    """
-    将torch-geometric的图数据对象转换为networkx图，并进行绘制。
 
-    参数:
-    - data: torch-geometric的图数据对象。
-    """
-    # 将torch-geometric图数据对象转换为networkx图
+def Plot_Graph(data):
+
+
     G = to_networkx(data, to_undirected=True)
 
-    # 绘制图
-    pos = nx.spring_layout(G)  # 使用Spring布局
+
+    pos = nx.spring_layout(G)  
     nx.draw(G, pos, with_labels=True, node_color='skyblue', edge_color='k', node_size=500, alpha=0.7)
     plt.show()
 
@@ -103,7 +89,7 @@ class GraphFeatureExtraction(nn.Module):
 
         node = x
 
-        # 将每个通道的向量表示为图的节点
+
         batch_data_list = []
         for i in range(B):
             node_i = node[i, :, :]
@@ -116,11 +102,11 @@ class GraphFeatureExtraction(nn.Module):
                 data = torch_geometric.data.Data(x=node_i,
                                                  edge_index=edge_index_i.to(x.device))
                 batch_data_list.append(data)
-        # 批处理所有的图
-        batched_data = Batch.from_data_list(batch_data_list)
-        # print(batched_data.x.shape)
 
-        # 在大图上应用ARMAConv
+        batched_data = Batch.from_data_list(batch_data_list)
+
+
+
         output = self.DirGNNConv(batched_data.x, batched_data.edge_index)
 
 
@@ -128,21 +114,3 @@ class GraphFeatureExtraction(nn.Module):
         return output.view(B, N, -1)
 
 
-if __name__ == '__main__':
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    x = torch.randn((32, 8, 1024), device=device)
-    model = GraphFeatureExtraction(node_n=8, Seq_len=1024).to(device)
-
-    edge = Random_Build_Graph(n_nodes=8, p=1)
-    print(edge)
-
-    # Plot_Graph(data=edge)
-    out = model(x, edge, isRandomAt=True)
-    print(out.shape)
-
-    pool1 = GraphPooling(node_n=8)
-    out1 = pool1(out)
-    print(out1.shape)
-
-    out2 = out1.squeeze()
-    print(out2.shape)
