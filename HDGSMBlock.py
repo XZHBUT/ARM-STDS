@@ -34,7 +34,7 @@ class HDGSMBlock(nn.Module):
         else:
             self.stride = stride
 
-        # 计算可以提取多少个补丁
+
         self.Patch_SeqLen = (self.Seq_len - self.patch_size) // self.stride + 1
 
         self.LstmChannel = ChannelWiseLSTM(self.in_channel,
@@ -46,19 +46,7 @@ class HDGSMBlock(nn.Module):
 
 
 
-        # self.TransformerChannel = ChannelWiseTransformer(in_channel=self.in_channel,
-        #                                                  Patch_SeqLen=self.Patch_SeqLen,
-        #                                                  hidden_size=self.hidden_size,
-        #                                                  num_layers=1,
-        #                                                  patch_size=self.patch_size)
 
-        # self.MambaChannel = ChannelWiseMamba(in_channel=self.in_channel,
-        #                                      Patch_size=self.patch_size,
-        #                                      hidden_size=self.hidden_size,
-        #                                      Seq_len=self.Seq_len,
-        #                                      Patch_SeqLen=self.Patch_SeqLen,
-        #                                      Orgin_Batchsize=64,
-        #                                      device=device)
         self.GrapChannel = GraphFeatureExtraction(node_n=self.in_channel, Seq_len=self.Seq_len)
 
         self.bn = torch.nn.BatchNorm1d(self.in_channel)
