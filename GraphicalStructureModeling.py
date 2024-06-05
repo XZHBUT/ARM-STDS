@@ -29,7 +29,7 @@ class GraphicalStructureModeling(nn.Module):
         count = At.size(1) - 2
 
         while count > 1:
-            solo_to_clu_two, solo_to_clu_min, mask_clu, clu_to_solo_two, clu_to_solo_min, mask_solo, clu_to_min_solo_mask, D_clu_to_solo_min = self.__find_closest_clusters__(
+            solo_to_clu_two, solo_to_clu_min, mask_clu, clu_to_solo_two, clu_to_solo_min, clu_to_solo_min, clu_to_min_solo_mask, D_clu_to_solo_min = self.__find_closest_clusters__(
                 Dis, At)
 
 
@@ -65,7 +65,7 @@ class GraphicalStructureModeling(nn.Module):
             count -= 1
 
 
-        solo_to_clu_last, solo_to_clu_min_last, mask_clu, clu_to_solo_two, clu_to_solo_min_last, mask_solo, clu_to_min_solo_mask_last, D_clu_to_solo_min_last \
+        solo_to_clu_last, solo_to_clu_min_last, mask_clu, clu_to_solo_two, mask_clu, mask_solo, clu_to_min_solo_mask_last, D_clu_to_solo_min_last \
             = self.__find_closest_clusters__(Dis, At, Last_Node=True)
 
         solo_to_clu_min_index_last = solo_to_clu_last[:, :1]
@@ -199,6 +199,9 @@ class GraphicalStructureModeling(nn.Module):
 
         clu_to_solo_sums = torch.sum(torch.where(torch.isfinite(D_clu_to_solo), D_clu_to_solo, torch.tensor(0.)),
                                      dim=-1)
+        clu_to_solo_sort = torch.argsort(clu_to_solo_means, dim=1)
+        clu_to_solo_two = clu_to_solo_sort[:, :2] 
+        clu_to_solo_min = torch.gather(clu_to_solo_means, 1, clu_to_solo_two) 
         valid_counts = torch.sum(torch.isfinite(D_clu_to_solo), dim=-1)
         clu_to_solo_means = clu_to_solo_sums / valid_counts.float() 
         # clu_to_solo_means torch.Size([2, 5])
@@ -268,10 +271,6 @@ class GraphicalStructureModeling(nn.Module):
             return x, At
 
 
-if __name__ == '__main__':
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    x = torch.randn((64, 8, 1024), device=device)
-    model = GraphicalStructureModeling(in_channel=8, Seq_len=1024, device=device).to(device)
 
     x, At = model(x,isRandomAt=True)
 
