@@ -134,6 +134,6 @@ def min_max_normalization(data):
 
 
     epsilon = 1e-12
-    normalized_data = (data - min_vals) / (max_vals - min_vals + epsilon)  # 归一化公式
+    normalized_data = (data - min_vals) / (max_vals - min_vals + epsilon)
     return normalized_data
 
